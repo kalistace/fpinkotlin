@@ -9,7 +9,7 @@ class Exercise_2_1 : WordSpec({
     // tag::init[]
     //think inverse fibonacci sequence : 13, 8, 5, 3, 2, 1, 1, 0
     fun fib(i: Int): Int {
-        fun fibAcc(n: Int, next: Int, current: Int): Int =
+        tailrec fun fibAcc(n: Int, next: Int, current: Int): Int =
                 if (n == 0) current
                 else fibAcc(n - 1, current + next, next)
         return fibAcc(i, 1, 0)
