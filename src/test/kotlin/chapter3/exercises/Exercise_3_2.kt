@@ -9,8 +9,8 @@ import io.kotlintest.specs.WordSpec
 
 // tag::init[]
 fun <A> setHead(xs: List<A>, x: A): List<A> = when (xs) {
-    is Nil -> Cons(x, Nil)
-    is Cons -> Cons(x, xs)
+    is Nil -> throw IllegalStateException()
+    is Cons -> Cons(x, xs.tail)
 }
 // end::init[]
 
