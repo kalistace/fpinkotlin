@@ -3,17 +3,32 @@ package chapter4.exercises
 import chapter4.None
 import chapter4.Option
 import chapter4.Some
+import chapter4.solutions.flatMap_2
+import chapter4.solutions.map
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
 
 //tag::init[]
-fun <A, B> Option<A>.map(f: (A) -> B): Option<B> = TODO() // <1>
+fun <A, B> Option<A>.map(f: (A) -> B): Option<B> = when (this) {
+    is None -> None
+    is Some -> Some(f(this.get))
+} // <1>
 
-fun <A, B> Option<A>.flatMap(f: (A) -> Option<B>): Option<B> = TODO()// <2>
+fun <A, B> Option<A>.flatMap(f: (A) -> Option<B>): Option<B> =
+    when (this) {
+        is None -> None
+        is Some -> f(this.get)
+    }// <2>
 
-fun <A> Option<A>.getOrElse(default: () -> A): A = TODO() // <3>
+fun <A> Option<A>.getOrElse(default: () -> A): A = when (this) {
+    is None -> default()
+    is Some -> this.get
+}// <3>
 
-fun <A> Option<A>.orElse(ob: () -> Option<A>): Option<A> = TODO() // <4>
+fun <A> Option<A>.orElse(ob: () -> Option<A>): Option<A> = when (this) {
+    is None -> ob()
+    is Some -> this
+}// <4>
 
 fun <A> Option<A>.filter(f: (A) -> Boolean): Option<A> = TODO() // <5>
 //end::init[]
@@ -40,16 +55,16 @@ class Exercise_4_1 : WordSpec({
     val some = Some(10)
 
     "option map" should {
-        "!transform an option of some value" {
+        "transform an option of some value" {
             some.map { it * 2 } shouldBe Some(20)
         }
-        "!pass over an option of none" {
+        "pass over an option of none" {
             none.map { it * 10 } shouldBe None
         }
     }
 
     "option flatMap" should {
-        """!apply a function yielding an option to an
+        """apply a function yielding an option to an
             option of some value""" {
                 some.flatMap { a ->
                     Some(a.toString())
@@ -59,7 +74,7 @@ class Exercise_4_1 : WordSpec({
                     Some(a.toString())
                 } shouldBe Some("10")
             }
-        "!pass over an option of none" {
+        "pass over an option of none" {
             none.flatMap { a ->
                 Some(a.toString())
             } shouldBe None
@@ -71,20 +86,20 @@ class Exercise_4_1 : WordSpec({
     }
 
     "option getOrElse" should {
-        "!extract the value of some option" {
+        "extract the value of some option" {
             some.getOrElse { 0 } shouldBe 10
         }
-        "!return a default value if the option is none" {
+        "return a default value if the option is none" {
             none.getOrElse { 10 } shouldBe 10
         }
     }
 
     "option orElse" should {
-        "!return the option if the option is some" {
+        "return the option if the option is some" {
             some.orElse { Some(20) } shouldBe some
             some.orElse_2 { Some(20) } shouldBe some
         }
-        "!return a default option if the option is none" {
+        "return a default option if the option is none" {
             none.orElse { Some(20) } shouldBe Some(20)
             none.orElse_2 { Some(20) } shouldBe Some(20)
         }
