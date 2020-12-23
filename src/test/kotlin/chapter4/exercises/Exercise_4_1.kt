@@ -3,8 +3,6 @@ package chapter4.exercises
 import chapter4.None
 import chapter4.Option
 import chapter4.Some
-import chapter4.solutions.flatMap_2
-import chapter4.solutions.map
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
 
@@ -30,22 +28,25 @@ fun <A> Option<A>.orElse(ob: () -> Option<A>): Option<A> = when (this) {
     is Some -> this
 }// <4>
 
-fun <A> Option<A>.filter(f: (A) -> Boolean): Option<A> = TODO() // <5>
+fun <A> Option<A>.filter(f: (A) -> Boolean): Option<A> = when (this) {
+    is None -> None
+    is Some -> if(f(this.get)) this else None
+}// <5>
 //end::init[]
 
 //tag::alternate[]
 fun <A, B> Option<A>.flatMap_2(
     f: (A) -> Option<B>
 ): Option<B> =
-    TODO()
+    this.map(f).getOrElse { None }
 
 fun <A> Option<A>.orElse_2(
     ob: () -> Option<A>
-): Option<A> = TODO()
+): Option<A> = this.map { a -> Some(a) }.getOrElse { ob() }
 
 fun <A> Option<A>.filter_2(
     f: (A) -> Boolean
-): Option<A> = TODO()
+): Option<A> =  this.flatMap { a -> if (f(a)) Some(a) else None }
 //end::alternate[]
 
 class Exercise_4_1 : WordSpec({
@@ -106,11 +107,11 @@ class Exercise_4_1 : WordSpec({
     }
 
     "option filter" should {
-        "!return some option if the predicate is met" {
+        "return some option if the predicate is met" {
             some.filter { it > 0 } shouldBe some
             some.filter_2 { it > 0 } shouldBe some
         }
-        "!return a none option if the predicate is not met" {
+        "return a none option if the predicate is not met" {
             some.filter { it < 0 } shouldBe None
             some.filter_2 { it < 0 } shouldBe None
         }
