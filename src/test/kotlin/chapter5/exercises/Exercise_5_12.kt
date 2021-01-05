@@ -1,6 +1,7 @@
 package chapter5.exercises
 
 import chapter3.List
+import chapter4.Some
 import chapter5.Stream
 import chapter5.solutions.take
 import chapter5.solutions.toList
@@ -13,7 +14,8 @@ import io.kotlintest.specs.WordSpec
 class Exercise_5_12 : WordSpec({
 
     //tag::fibs[]
-    fun fibs(): Stream<Int> = TODO()
+    fun fibs(): Stream<Int> = unfold(Pair(0, 1),
+        { s -> Some(Pair(s.first, Pair(s.second, s.first + s.second))) })
     //end::fibs[]
 
     //tag::from[]
