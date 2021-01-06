@@ -5,23 +5,78 @@ import chapter3.Nil
 import chapter4.None
 import chapter4.Option
 import chapter4.Some
+import chapter5.Cons
 import chapter5.Stream
 import chapter5.Stream.Companion.empty
 import chapter5.solutions.toList
+import chapter5.solutions.unfold
+import chapter5.solutions.zipWith
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
 
 //tag::init[]
-fun <A, B> Stream<A>.map(f: (A) -> B): Stream<B> = TODO()
+fun <A, B> Stream<A>.map(f: (A) -> B): Stream<B> = unfold(this) { s ->
+    when (s) {
+        is Cons -> Some(Pair(f(s.head()), s.tail()))
+        else -> None
+    }
+}
 
-fun <A> Stream<A>.take(n: Int): Stream<A> = TODO()
+fun <A> Stream<A>.take(n: Int): Stream<A> = unfold(this) { s ->
+    when (s) {
+        is Cons -> if (n > 0) Some(Pair(s.head(),
+            s.tail().take(n - 1))) else None
+        else -> None
+    }
+}
 
-fun <A> Stream<A>.takeWhile(p: (A) -> Boolean): Stream<A> = TODO()
+fun <A> Stream<A>.takeWhile(p: (A) -> Boolean): Stream<A> =
+    unfold(this) { s ->
+        when (s) {
+            is Cons -> if (p(s.head())) Some(Pair(s.head(),
+                s.tail().takeWhile(p))) else None
+            else -> None
+        }
+    }
+
+// Doesn't work
+//
+// fun <A, B, C> Stream<A>.zipWith(
+//     that: Stream<B>,
+//     f: (A, B) -> C
+// ): Stream<C> = unfold(this) { s ->
+//     when (s) {
+//         is Cons -> when (that) {
+//             is Cons -> Some(
+//                 Pair(
+//                     f(s.head(), that.head()),
+//                     s.tail().zipWith(that.tail(), f))
+//             )
+//             else -> None
+//         }
+//         else -> None
+//     }
+// }
 
 fun <A, B, C> Stream<A>.zipWith(
     that: Stream<B>,
     f: (A, B) -> C
-): Stream<C> = TODO()
+): Stream<C> =  unfold(Pair(this, that)) { (ths: Stream<A>, tht: Stream<B>) ->
+    when (ths) {
+        is Cons ->
+            when (tht) {
+                is Cons ->
+                    Some(
+                        Pair(
+                            f(ths.head(), tht.head()),
+                            Pair(ths.tail(), tht.tail())
+                        )
+                    )
+                else -> None
+            }
+        else -> None
+    }
+}
 
 fun <A, B> Stream<A>.zipAll(
     that: Stream<B>
@@ -34,44 +89,44 @@ fun <A, B> Stream<A>.zipAll(
 class Exercise_5_13 : WordSpec({
 
     "Stream.map" should {
-        "!apply a function to each evaluated element in a stream" {
+        "apply a function to each evaluated element in a stream" {
             val s = Stream.of(1, 2, 3, 4, 5)
             s.map { "${(it * 2)}" }.toList() shouldBe
                 List.of("2", "4", "6", "8", "10")
         }
-        "!return an empty stream if no elements are found" {
+        "return an empty stream if no elements are found" {
             empty<Int>().map { (it * 2).toString() } shouldBe empty()
         }
     }
 
     "Stream.take(n)" should {
-        "!return the first n elements of a stream" {
+        "return the first n elements of a stream" {
             val s = Stream.of(1, 2, 3, 4, 5)
             s.take(3).toList() shouldBe List.of(1, 2, 3)
         }
 
-        "!return all the elements if the stream is exhausted" {
+        "return all the elements if the stream is exhausted" {
             val s = Stream.of(1, 2, 3)
             s.take(5).toList() shouldBe List.of(1, 2, 3)
         }
 
-        "!return an empty stream if the stream is empty" {
+        "return an empty stream if the stream is empty" {
             val s = Stream.empty<Int>()
             s.take(3).toList() shouldBe Nil
         }
     }
 
     "Stream.takeWhile" should {
-        "!return elements while the predicate evaluates true" {
+        "return elements while the predicate evaluates true" {
             val s = Stream.of(1, 2, 3, 4, 5)
             s.takeWhile { it < 4 }.toList() shouldBe List.of(1, 2, 3)
         }
-        "!return all elements if predicate always evaluates true" {
+        "return all elements if predicate always evaluates true" {
             val s = Stream.of(1, 2, 3, 4, 5)
             s.takeWhile { true }.toList() shouldBe
                 List.of(1, 2, 3, 4, 5)
         }
-        "!return empty if predicate always evaluates false" {
+        "return empty if predicate always evaluates false" {
             val s = Stream.of(1, 2, 3, 4, 5)
             s.takeWhile { false }.toList() shouldBe List.empty()
         }
