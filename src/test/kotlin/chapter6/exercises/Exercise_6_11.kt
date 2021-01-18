@@ -53,8 +53,11 @@ class Solution_6_11 : WordSpec({
         inputs: List<Input>
     ): State<Machine, Tuple2<Int, Int>> =
         State.fx(Id.monad()) {
-            val (x) = inputs.map(update).map(StateApi::modify)
+            val (appliedState) = inputs.map(update).map(StateApi::modify)
                 .stateSequential()
+            // For instance
+            // val (coin) = inputs.map(update).map(StateApi::modify)[0] (flatmap)
+            // val (turn) = inputs.map(update).map(StateApi::modify)[1] (flatmap)
             val (s: Machine) = StateApi.get<Machine>()
             Tuple2(s.candies, s.coins)
         }
