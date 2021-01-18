@@ -37,14 +37,14 @@ class Exercise_6_7 : WordSpec({
         }
     //end::init2[]
 
-    fun ints2(count: Int, rng: RNG): Pair<List<Int>, RNG> = sequence()
+    fun ints(count: Int, rng: RNG): Pair<List<Int>, RNG> {
+        fun go(c: Int): List<Rand<Int>> =
+            if (c == 0) Nil
+            else Cons({ r -> Pair(r.nextInt().first, r.nextInt().second) }, go(c - 1))
+        return sequence(go(count))(rng)
+    }
 
 
-    fun ints(count: Int, rng: RNG): Pair<List<Int>, RNG> = if (count > 0) {
-        val (headInt, nextRng) = rng.nextInt()
-        val (tailInts, endRng) = ints(count - 1, nextRng)
-        Pair(Cons(headInt, tailInts), endRng)
-    } else Pair(Nil, rng)
     "sequence" should {
 
         "combine the results of many actions using recursion" {
@@ -83,7 +83,7 @@ class Exercise_6_7 : WordSpec({
 
     "ints" should {
         "!generate a list of ints of a specified length" {
-            ints2(4, rng1).first shouldBe
+            ints(4, rng1).first shouldBe
                 List.of(1, 1, 1, 1)
         }
     }
