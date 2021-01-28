@@ -17,12 +17,12 @@ object Listing {
 
     val Nil = listOf<Nothing>()
 
-    fun <A> sequence1(ps: List<Par<A>>): Par<List<A>> =
+    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> =
         when (ps) {
             Nil -> Pars.unit(Nil)
             else -> Pars.map2(
                 ps.head,
-                sequence1(ps.tail)
+                sequence(ps.tail)
             ) { a: A, b: List<A> ->
                 listOf(a) + b
             }
