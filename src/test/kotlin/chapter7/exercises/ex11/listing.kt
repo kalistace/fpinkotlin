@@ -10,6 +10,8 @@ object Listing {
     fun <K, V> choiceMap(
         key: Par<K>,
         choices: Map<K, Par<V>>
-    ): Par<V> = TODO()
+    ): Par<V> =     { es: ExecutorService ->
+        choices[key(es).get()]!!.invoke(es)
+    }
     //end::init[]
 }
