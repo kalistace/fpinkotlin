@@ -24,8 +24,40 @@ data class Falsified(
 
 //tag::init[]
 data class Prop(val run: (TestCases, RNG) -> Result) {
-    fun and(p: Prop): Prop = TODO()
+    fun and(p: Prop): Prop = Prop { n, rng ->
+        when(val res = this.run(n, rng)) {
+            Passed -> p.run(n, rng)
+            is Falsified -> res
+        }
+    }
 
-    fun or(p: Prop): Prop = TODO()
+    fun or(other: Prop) = Prop { n, rng ->
+        when (val prop = run(n, rng)) {
+            is Falsified ->
+                other.tag(prop.failure).run(n, rng)
+            is Passed -> prop
+        }
+    }
+
+    private fun tag(msg: String) = Prop { n, rng ->
+        when (val prop = run(n, rng)) {
+            is Falsified -> Falsified(
+                "$msg: ${prop.failure}",
+                prop.successes
+            )
+            is Passed -> prop
+        }
+    }
 }
 //end::init[]
+
+
+// interface Prop {
+//     fun check(): Boolean
+//     fun and(p: Prop): Prop {
+//         val checked = this.check() && p.check()
+//         return object : Prop {
+//             override fun check() = checked
+//         }
+//     }
+// }
